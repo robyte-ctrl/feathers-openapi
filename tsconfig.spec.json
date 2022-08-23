@@ -1,0 +1,26 @@
+{
+  "include": [
+    "src/**/*.spec.ts",
+  ],
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "target": "es2020",
+    "module": "commonjs",
+    // "lib": [],
+    "strict": true,
+    // "noImplicitReturns": true,
+    // "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    // "typeRoots": [],
+    // "types": [],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    // "explainFiles": true,
+    // "traceResolution": true
+  }
+}

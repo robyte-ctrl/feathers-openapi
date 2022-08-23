@@ -1,0 +1,27 @@
+{
+  "name": "feathers-openapi",
+  "version": "1.0.0",
+  "dependencies": {
+    "joi-to-json": "^2.3.6",
+    "json-schema-to-zod": "^0.1.2",
+    "openapi3-ts": "^2.0.2",
+    "tslib": "^2.4.0",
+    "typescript": "^4.3.5",
+    "zod": "^3.17.10"
+  },
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "prepublish": "npm run compile",
+    "mocha": "ts-mocha --growl --timeout=30000 --exit './test/**/*.test.ts' './src/**/*.spec.ts'"
+  },
+  "main": "dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "devDependencies": {
+    "@feathersjs/feathers": "^3.3.1",
+    "@types/feathersjs__feathers": "^3.1.8",
+    "@types/mocha": "^9.1.1",
+    "joi": "^17.3.0",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0"
+  }
+}
