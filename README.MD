@@ -1,6 +1,15 @@
 ## Open-api generator for @feathersjs/feathers
 
-#### Tested only for @feathers: 3.3.1  ( create issue if it doesn't work for your version )
+#### Tested only for @feathers: 3.3.1  ( open discussion if you have problems with connect it to feathers )
+
+### How does it work ?
+This library will analyze your app for generate openapi/swagger schema. All that need from you is to connect it to your app and write specific validation hooks for service methods if you want that input and output data will be specified in generated openapi/swagger schema. Now it support only validation based on `zod`(native) and `joi`(using conversion), open task related to it if you use something other.
+
+
+### Installation
+```shell
+    npm i feathers-openapi
+```
 
 ### Example of use
 
@@ -16,13 +25,7 @@ version: '1',
 serverUrl: `http://localhost:4200`,  // swagger documentation will reffered to this host
 }).getSpecAsJson();
 
-const options = { // TODO: check if it is required
-    swaggerOptions: {
-      validatorUrl: null,
-    },
-};
-
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(JSON.parse(scheme), options)); // endpoint for swagger UI
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(JSON.parse(scheme))); // endpoint for swagger UI
 app.use('/openapi', (req, res) => res.end(scheme)); // endpoint for get json version  (can be util for codegeneration)
 
 ```
@@ -34,8 +37,29 @@ app.use('/openapi', (req, res) => res.end(scheme)); // endpoint for get json ver
 ```typescript
 export { validateBody, validateId, validateParam, validateResponse } from 'feathers-openapi';
 
-configureLogger(logger as any);  // here you will configure logger & badRequest for validation hooks and export it's for use in project
+configureLogger(logger);
 configureBadRequest(BadRequest);
+
+// and in code with your service
+
+app.service(serviceName).hooks({
+  before: {
+    create: [
+      validateBody(z.object({ username: z.string(), password: z.string() })),
+      validateParam(
+        'route',
+        Joi.object({
+          appId: Joi.string().required(),
+        }).required(),
+      )
+    ],
+  },
+  after: {
+    create: [
+      validateResponse(z.object({ userId: z.number() }))
+    ]
+  }
+});
 
 ```
 
@@ -44,7 +68,7 @@ configureBadRequest(BadRequest);
 #### Hook should be function with name `validateParamHook` & `validateId` (for params), `validateBody`(for request body) or `validateResponseHook`( for response body) and also you should  attach variable to this function that contain validation scheme with format   `[hookName].schema.schema = schema;`
 
 
-#### NOTE! supported only validation schema of type `zod`, `joi` and `json-schema`. Ensure that you convert your schema to one of these formats
+#### NOTE! supported only validation schema of type `zod`, `joi`. Ensure that you convert your schema to one of these formats
 
 ```typescript
 
