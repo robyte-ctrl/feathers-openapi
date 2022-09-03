@@ -1,6 +1,6 @@
 {
   "name": "feathers-openapi",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "dependencies": {
     "joi-to-json": "^2.3.6",
     "json-schema-to-zod": "^0.1.2",
