@@ -14,6 +14,10 @@
     "prepublish": "npm run compile",
     "mocha": "ts-mocha --growl --timeout=30000 --exit './test/**/*.test.ts' './src/**/*.spec.ts'"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HardCoreQual/feathers-openapi"
+  },
   "main": "dist/index.js",
   "typings": "./dist/index.d.ts",
   "devDependencies": {
