@@ -50,7 +50,7 @@ export function prepareOpenapiRouteInfo(data: { path: string, method: string, pa
     });
 
     let requestBody: OperationObject['requestBody'];
-    if (e.body?.length && e.body[0].schema) { // NOTE: for body is used only first schema
+    if (e.body?.length && e.body[0]?.schema) { // NOTE: for body is used only first schema
       const schemeFromExpress = depictSchema({schema: getZodScheme(e.body[0].schema), isResponse: false});
 
       requestBody = {
@@ -67,8 +67,8 @@ export function prepareOpenapiRouteInfo(data: { path: string, method: string, pa
       description: 'Description',
     };
 
-    if (e.response?.length && e.response[0].schema) {  // NOTE: for response is used only first schema
-      const schemeFromExpress = depictSchema({schema: getZodScheme(e.response[0].schema), isResponse: false});
+    if (e.response?.length && e.response[0]?.schema) {  // NOTE: for response is used only first schema
+      const schemeFromExpress = depictSchema({schema: getZodScheme(e.response[0]?.schema), isResponse: false});
 
       response['content'] = {
         'application/json': {
