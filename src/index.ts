@@ -2,9 +2,6 @@ import {OpenApiBuilder} from 'openapi3-ts';
 import {extractData} from './read-app';
 import {prepareOpenapiRouteInfo} from './prepare-openapi-route-info';
 
-
-export { configureLogger, configureBadRequest, validateBody, validateParam, validateResponse, validateId } from './validation-hooks';
-
 export class OpenAPI extends OpenApiBuilder {
   public constructor({
     app,

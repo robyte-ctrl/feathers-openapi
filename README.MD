@@ -1,10 +1,7 @@
 ## Open-api generator for @feathersjs/feathers
+-  This library will analyze your app for generate openapi/swagger schema.
 
-#### Tested only for @feathers: 3.3.1  ( open discussion if you have problems with connect it to feathers )
-
-### How does it work ?
-This library will analyze your app for generate openapi/swagger schema. All that need from you is to connect it to your app and write specific validation hooks for service methods if you want that input and output data will be specified in generated openapi/swagger schema. Now it support only validation based on `zod`(native) and `joi`(using conversion), open task related to it if you use something other.
-
+#### Tested only for @feathers: 3.3.1, report if you meet problems
 
 ### Installation
 ```shell
@@ -14,7 +11,6 @@ This library will analyze your app for generate openapi/swagger schema. All that
 ### Example of use
 
 ```typescript
-
 import { OpenAPI } from 'feathers-openapi';   /// this library
 import swaggerUi from 'swagger-ui-express'; // other library for generate UI based on openapi.json
 
@@ -31,39 +27,7 @@ app.use('/openapi', (req, res) => res.end(scheme)); // endpoint for get json ver
 ```
 
 
-## For to connect info about input and output data is required that your app have validation hooks with specific name and structure
-### Using hooks from library
-
-```typescript
-export { validateBody, validateId, validateParam, validateResponse } from 'feathers-openapi';
-
-configureLogger(logger);
-configureBadRequest(BadRequest);
-
-// and in code with your service
-
-app.service(serviceName).hooks({
-  before: {
-    create: [
-      validateBody(z.object({ username: z.string(), password: z.string() })),
-      validateParam(
-        'route',
-        Joi.object({
-          appId: Joi.string().required(),
-        }).required(),
-      )
-    ],
-  },
-  after: {
-    create: [
-      validateResponse(z.object({ userId: z.number() }))
-    ]
-  }
-});
-
-```
-
-### Creating custom implementation of hooks
+### Creating implementation of hooks where is connected info for validation
 
 #### Hook should be function with name `validateParamHook` & `validateId` (for params), `validateBody`(for request body) or `validateResponseHook`( for response body) and also you should  attach variable to this function that contain validation scheme with format   `[hookName].schema.schema = schema;`
 
@@ -73,23 +37,18 @@ app.service(serviceName).hooks({
 ```typescript
 
 // function validateParam will create validateParamHook and attach to this hook validation schema
-export function validateParam<S extends ObjectSchema>(name: 'query' | 'route', schema: S, options?: ValidationOptions): Hook {
+export function validateParam<S extends AnySchema | ZodSchema<any, any, any>>(name: 'query' | 'route', schema: S, options?: ValidationOptions): Hook {
   function validateParamHook(context: HookContext) {
-    const { params: { [name]: param } } = context;
-
-    const { error, value } = schema.validate(param, options); // example for `joi` validator
-    if (error) {
-      const { message, details } = error;
-
-      throw new BadRequest(message, details);
-    }
-
-    context.params[name] = value;
-
-    return context;
+    return {
+      ...context,
+      params: {
+        ...context.params,
+        [name]: validateBase(context.params[name], schema, 'params', false, options),
+      },
+    };
   }
 
-  validateParamHook.schema = {
+  validateParamHook.schema = {  // it is mandatory for feathers-openapid
     name,
     schema,
     options,
@@ -97,6 +56,117 @@ export function validateParam<S extends ObjectSchema>(name: 'query' | 'route', s
 
   return validateParamHook;
 }
+
+export function validateBody<S extends AnySchema | ZodSchema<any, any, any>>(schema: S, options?: ValidationOptions): Hook {
+  function validateBodyHook(context: HookContext) {
+    return {
+      ...context,
+      data: validateBase(context['data'], schema, 'data', false, options),
+    };
+  }
+
+  validateBodyHook.schema = {
+    schema,
+    options,
+  };
+
+  return validateBodyHook;
+}
+
+export function validateResponse<S extends AnySchema | ZodSchema<any, any, any>>(schema: S, options?: ValidationOptions): Hook {
+  function validateResponseHook(context: HookContext) {
+    return {
+      ...context,
+      result: validateBase(context['result'], schema, 'result', true, options),
+    };
+  }
+
+  validateResponseHook.schema = {
+    schema,
+    options,
+  };
+
+  return validateResponseHook;
+}
+
+export function validateId<S extends AnySchema | ZodSchema<any, any, any>>(schema: S, options?: ValidationOptions): Hook {
+  function validateIdHook(context: HookContext) {
+    return {
+      ...context,
+      id: validateBase(context['id'], schema, 'id', false, options),
+    };
+  }
+
+  validateIdHook.schema = {
+    schema: isJoiScheme(schema) ? Joi.object({ id: schema }) : z.object({ id: schema }),
+    options,
+  };
+
+  return validateIdHook;
+}
+
+
+const isJoiScheme = <J extends AnySchema, Z extends ZodSchema<any, any, any>>(s: J | Z): s is J => {
+  return Joi.isSchema(s);
+};
+
+function validateBase<S extends AnySchema | ZodSchema<any, any, any>>(data: unknown, schema: S, target: string, softErrors: boolean, options?: ValidationOptions) {
+  if (isJoiScheme(schema)) {
+    const { error, value } = schema.validate(data, options);
+
+    if (error) {
+      logger.warn(`validateBase ${ target } validation failed`, error);
+
+      const { message, details } = error;
+
+      if (!softErrors) {
+        throw new BadRequest(message, details);
+      }
+    }
+
+    return value;
+  }
+  try {
+    return schema.parse(data);
+  } catch (e: unknown) {
+    logger.warn(`validateBase ${ target } validation failed`, e);
+
+    const { message, issues } = e as ZodError;
+
+    if (!softErrors) {
+      throw new BadRequest(message, issues);
+    }
+  }
+
+
+  return context;
+}
+
+```
+
+### Using hooks
+
+```typescript
+
+app.service(serviceName).hooks({
+  before: {
+    create: [
+      validators.validateBody(z.object({ username: z.string(), password: z.string() })),
+      validators.validateParam(
+        'route',
+        Joi.object({
+          appId: Joi.string().required(),
+        }).required(),
+      )
+    ],
+  },
+  after: {
+    create: [
+      validators.validateResponse(z.object({ userId: z.number() }))
+    ]
+  }
+});
+
 ```
 
 ### License

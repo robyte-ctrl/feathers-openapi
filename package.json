@@ -1,6 +1,6 @@
 {
   "name": "feathers-openapi",
-  "version": "1.0.7",
+  "version": "1.1.2",
   "license": "MIT",
   "dependencies": {
     "joi-to-json": "^2.3.6",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "compile": "tsc -p tsconfig.json",
-    "prepublish": "npm run compile",
+    "prepublish": "rm -rf dist && npm run compile",
     "mocha": "ts-mocha --growl --timeout=30000 --exit './test/**/*.test.ts' './src/**/*.spec.ts'"
   },
   "repository": {
