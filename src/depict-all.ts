@@ -378,6 +378,7 @@ const depictHelpers: DepictingRules = {
   ZodIntersection: depictIntersection,
   ZodUnion: depictUnion,
   ZodAny: depictAny,
+  ZodUnknown: depictAny,
   ZodDefault: depictDefault,
   ZodEnum: depictEnum,
   ZodNativeEnum: depictEnum,
