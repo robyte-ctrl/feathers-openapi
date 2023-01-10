@@ -36,8 +36,8 @@ it('should convert ts to js and exec it without errors', function () {
     businessLocationId: z.number().int().gte(1).optional(),
     areaId: z.number().int().gte(1).optional(),
     placeId: z.number().int().gte(1).optional(),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    startDate: z.date().optional(),
+    endDate: z.date().or(z.string()).optional(),
     status: z
       .union([
         z.array(z.any()),
@@ -112,10 +112,19 @@ it('should convert ts to js and exec it without errors', function () {
         "exclusiveMaximum": false
       },
       "startDate": {
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "endDate": {
-        "type": "string"
+        "oneOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "string"
+          }
+        ]
       },
       "status": {
         "nullable": true,
