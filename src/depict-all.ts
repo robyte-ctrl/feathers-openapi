@@ -364,6 +364,11 @@ export const depictEffect: DepictHelper<z.ZodEffects<z.ZodTypeAny>> = ({
 
   return { ...initial, ...input };
 };
+export const depictDate: DepictHelper<z.ZodDate> = ({ initial }) => ({
+  ...initial,
+  type: 'string',
+  format: 'date-time',
+});
 const depictHelpers: DepictingRules = {
   ZodString: depictString,
   ZodNumber: depictNumber,
@@ -386,6 +391,7 @@ const depictHelpers: DepictingRules = {
   ZodOptional: depictOptionalOrNullable,
   ZodNullable: depictOptionalOrNullable,
   ZodDiscriminatedUnion: depictDiscriminatedUnion,
+  ZodDate: depictDate,
 };
 export const depictSchema: DepictHelper<z.ZodTypeAny> = ({
   schema,
